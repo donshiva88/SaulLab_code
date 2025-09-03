@@ -3,7 +3,7 @@
 
 We build tools to work with Cellular Senescence
 
-[#Senescent cell definition](https://github.com/donshiva88/SaulLab/blob/snippets/Senescent%20cell%20definition)
+[#EMBOJ_p16_p21](https://github.com/donshiva88/SaulLab_code/blob/main/P16_vs_P21)
 
 
 
