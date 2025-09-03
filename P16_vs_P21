@@ -1,4 +1,4 @@
-Fig. 1
+Fig. 1-3
 library(Seurat)
 
 a)
@@ -44,3 +44,71 @@ f)
 
 g)
 (Cytoscape)
+
+Fig. 4
+a)
+library(ggplot2)
+library(dplyr)
+
+Fig5_compendium_genes <- Fig5_compendium_genes_complete
+
+new_id <- transform(Fig5_compendium_genes$gene, ID = as.numeric(factor(Fig5_compendium_genes$gene)))
+Fig5_compendium_genes$id <- new_id$ID
+
+label_data <- Fig5_compendium_genes
+number_of_bar <- max(Fig5_compendium_genes$id)
+angle <-  90 - 360 * (label_data$id-0.5) /number_of_bar
+
+label_data$hjust<-ifelse( angle < -90, 1, 0)
+label_data$angle<-ifelse(angle < -90, angle+180, angle)
+label_data2 <- distinct(label_data, id, .keep_all = TRUE)
+label_data3 <- label_data %>%
+  arrange(desc(log2FC)) %>%
+  distinct(id, .keep_all = TRUE)
+
+base_data <- label_data3 %>% 
+  group_by(tissue) %>% 
+  summarize(start=min(id), end=max(id)) %>% 
+  rowwise() %>% 
+  mutate(title=mean(c(start, end)))
+
+grid_data <- base_data
+grid_data$end <- grid_data$end[ c( nrow(grid_data), 1:nrow(grid_data)-1)] + 1
+grid_data$start <- grid_data$start - 1
+grid_data <- grid_data[-1,]
+
+grid_data$start = -0.5
+grid_data$end = 0
+
+#p16, logscale:
+ggplot(data=Fig5_compendium_genes, aes(x=as.factor(gene), y=log2FC))+    geom_point(stat="identity", aes(size=log2FC, color=tissue))+    scale_y_continuous(trans='log10', limits = c(-2,70)) +    geom_segment(data=grid_data, aes(x = end, y = 0, xend = start, yend = 0), colour = "grey", alpha=1, size=0.3 , inherit.aes = FALSE )+geom_segment(data=grid_data, aes(x = end, y = 0.5, xend = start, yend = 0.5), colour = "grey", alpha=1, size=0.3 , inherit.aes = FALSE )+geom_segment(data=grid_data, aes(x = end, y = 1, xend = start, yend = 1), colour = "grey", alpha=1, size=0.3 , inherit.aes = FALSE )+geom_segment(data=grid_data, aes(x = end, y = 1.5, xend = start, yend = 1.5), colour = "grey", alpha=1, size=0.3 , inherit.aes = FALSE )+geom_segment(data=grid_data, aes(x = end, y = 2, xend = start, yend = 2), colour = "grey", alpha=1, size=0.3 , inherit.aes = FALSE )+    geom_boxplot(mapping=aes(x=as.factor(gene), y=median), color="black", fatten=0.1, lwd=0.1)+    scale_radius(range=c(1,10))+coord_polar(start=0)+theme_minimal() +theme(        axis.text = element_blank(),        axis.title = element_blank(),        panel.grid = element_blank(),        plot.margin = unit(rep(-1,4), "cm"))+ geom_text(data=label_data3, aes(x=id, y=log2FC+0.25, label=gene, hjust=hjust), color="black",alpha=1, size=1.5, angle= label_data3$angle, inherit.aes = FALSE)+ guides(colour = guide_legend(override.aes = list(size=8)))+scale_color_manual(values=c("darkred", "#FF9393", "gold", "#FFEC80", "darkgreen", "#00A400", "lightblue", "#DDEFF4", "blue", "#4242FF", "pink", "#FFDFE4"))
+
+b)
+#p21, logscale:
+ggplot(data=Fig5_compendium_genes, aes(x=as.factor(gene), y=log2FC))+    geom_point(stat="identity", aes(size=log2FC, color=tissue))+    scale_y_continuous(trans='log10', limits = c(-2,70)) +    geom_segment(data=grid_data, aes(x = end, y = 0, xend = start, yend = 0), colour = "grey", alpha=1, size=0.3 , inherit.aes = FALSE )+geom_segment(data=grid_data, aes(x = end, y = 0.5, xend = start, yend = 0.5), colour = "grey", alpha=1, size=0.3 , inherit.aes = FALSE )+geom_segment(data=grid_data, aes(x = end, y = 1, xend = start, yend = 1), colour = "grey", alpha=1, size=0.3 , inherit.aes = FALSE )+geom_segment(data=grid_data, aes(x = end, y = 1.5, xend = start, yend = 1.5), colour = "grey", alpha=1, size=0.3 , inherit.aes = FALSE )+geom_segment(data=grid_data, aes(x = end, y = 2, xend = start, yend = 2), colour = "grey", alpha=1, size=0.3 , inherit.aes = FALSE )+    geom_boxplot(mapping=aes(x=as.factor(gene), y=median), color="black", fatten=0.1, lwd=0.1)+    scale_radius(range=c(1,10))+coord_polar(start=0)+theme_minimal() +theme(        axis.text = element_blank(),        axis.title = element_blank(),        panel.grid = element_blank(),        plot.margin = unit(rep(-1,4), "cm"))+ geom_text(data=label_data3, aes(x=id, y=log2FC+0.25, label=gene, hjust=hjust), color="black",alpha=1, size=1.5, angle= label_data3$angle, inherit.aes = FALSE)+ guides(colour = guide_legend(override.aes = list(size=8)))+scale_color_manual(values=c("darkred", "#FF9393", "gold", "#FFEC80", "darkgreen", "#00A400", "lightblue", "#DDEFF4", "blue", "#4242FF", "pink", "#FFDFE4"))
+
+c-k
+#both:
+summary_both_datasets <- read_excel(".../summary_both_datasets.xlsx",  sheet = "adj3")
+data <- as.data.frame(summary_both_datasets)
+
+rownames(data) <- data$Gene
+data$Gene <- NULL
+
+c)
+data <- as.data.frame(naked_frame_SenMayo_clean_p16_p21_both)
+rownames(data) <- data$Gene
+data$Gene <- NULL
+
+#p16
+radarchart(data, axistype=1, pcol="#850000E6", pfcol="#85000066" , plwd=3 , plty=1, cglcol="grey", cglty=1, axislabcol="grey", caxislabels=seq(0,5,1), cglwd=1, vlcex=1, maxmin = TRUE, centerzero = TRUE, seg = 5)
+
+#p21
+radarchart(data, axistype=1, pcol="#000081E6", pfcol="#00008166" , plwd=3 , plty=1, cglcol="grey", cglty=1, axislabcol="grey", caxislabels=seq(0,14,1), cglwd=1, vlcex=1.00, maxmin = TRUE, centerzero = TRUE, seg = 14)
+
+#both
+radarchart(data, axistype=1, pcol=c("#000081E6", "#850000E6", "#FFD701E6"), pfcol=c("#00008166", "#85000066",  "#FFD70166") , plwd=1 , plty=1, cglcol="grey", cglty=1, axislabcol="grey", caxislabels=seq(0,14,1), cglwd=1, vlcex=1.2, maxmin = TRUE, centerzero = TRUE, seg = 14)
+
+
+Fig. 5
+(manual calculation)
