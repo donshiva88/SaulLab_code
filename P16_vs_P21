@@ -1,0 +1,46 @@
+Fig. 1
+library(Seurat)
+
+a)
+DimPlot(old_sc_brain_adjusted_labelled_perfect_works, reduction = "tsne", pt.size = 1.5, cols = alpha(c("black", "red", "blue", "darkgreen", "gold", "purple", "brown", "grey"), 0.5))+theme(axis.line = element_blank(), axis.ticks = element_blank(), axis.text = element_blank(), axis.title = element_blank())
+
+b)
+old_sc_brain_adjusted_labelled_perfect_works@meta.data$Cd45 <- ifelse(old_sc_brain_adjusted_labelled_perfect_works@assays$RNA["Ptprc"]>0.0, "pos", "neg") 
+old_sc_brain_adjusted_labelled_perfect_works@meta.data$Mki67 <- ifelse(old_sc_brain_adjusted_labelled_perfect_works@assays$RNA["Mki67"]>0.0, "pos", "neg") 
+old_sc_brain_adjusted_labelled_perfect_works@meta.data$G10M <- ifelse(old_sc_brain_adjusted_labelled_perfect_works$Phase=="S", "neg", "pos")
+
+subset_Cd45neg <- subset(old_sc_brain_adjusted_labelled_perfect_works, Cd45=="neg")
+subset_Cd45neg_ki67neg <- subset(subset_Cd45neg, Mki67=="neg") 
+subset_Cd45neg_ki67neg_Sneg <- subset(subset_Cd45neg_ki67neg, G10M=="pos")
+
+library(ggalluvial)
+library(tidyr)
+data_long <- melt(new_tbl_total, id.vars=c("cell_type"))
+
+part above:
+cells_relative_long %>% mutate(value = value* 100) %>%    mutate(variable=fct_relevel(variable, "original", "Cd45neg", "Cd45neg_ki67neg", "Cd45neg_ki67neg_noS")) %>% group_by(variable) %>% 
+ggplot(aes(y = value, x = variable, fill = as.character(cluster_id)))+geom_flow(aes(alluvium = as.character(cluster_id)), alpha= .4, color = "white", curve_type = "sigmoid")+geom_col(width=.7, color = "white")+cowplot::theme_minimal_hgrid()+theme(panel.grid.major = element_blank(), axis.text = element_text(angle=90), axis.title = element_blank(), axis.line.x = element_blank(), legend.title = element_blank())+scale_fill_manual(values=c("darkgreen", "blue", "red", "black", "gold", "brown", "gold", "purple"))
+
+part below:
+cells_relative_part5_long  %>% mutate(value = value* 100) %>%    mutate(variable=fct_relevel(variable, "Cd45neg_ki67neg_noS", "p16_cells")) %>% group_by(variable) %>% ggplot(aes(y = value, x = variable, fill = cluster_id))+geom_flow(aes(alluvium = cluster_id), alpha= .4, color = "white", curve_type = "sigmoid")+geom_col(width=.7, color = "white")+cowplot::theme_minimal_hgrid()+theme(panel.grid.major = element_blank(), axis.text = element_text(angle=90), axis.title = element_blank(), axis.line.x = element_blank(), legend.title = element_blank())+scale_fill_manual(values=c("darkgreen", "blue", "red", "black", "gold", "white", "gold", "purple"))
+
+c)
+seurat <- seurat_brain1.2
+seurat@meta.data$p16p21 <- factor(seurat@meta.data$p16p21, levels=c("p16+", "p21+", "dPo", "none"))
+Idents(seurat) <- "p16p21"
+
+DimPlot(seurat, reduction = "tsne", pt.size = 1.5, cols = c("grey", "#006400", "#00008B", "#8B0000"), order = c("p16+", "p21+", "dPo", "none"))+theme(axis.line = element_blank(), axis.ticks = element_blank(), axis.text = element_blank(), axis.title = element_blank())&NoLegend()
+
+d)
+DotPlot(old_sc_brain_adjusted_labelled_perfect_works_correct3, idents=c("dPo", "p16", "p21"), features=c("Cdkn2a", "Cdkn1a", "Lmnb1"), dot.min=0.1, dot.scale=12)+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=0), axis.line=element_blank(), axis.title = element_blank())+scale_colour_gradient2(low="blue", mid="#D9D9D9", high="#CC0000", midpoint=0)+geom_point(aes(size=pct.exp), shape = 21, colour="black", stroke=0.5)
+
+e)
+library(reticulate)
+repl_python()
+fig, ax = plt.subplots()for i in set(sd.cell_states):    ax.scatter(sd.Xdr.iloc[np.array(sd.cell_states)==i, 0], sd.Xdr.iloc[np.array(sd.cell_states)==i, 1], s=10, label=i, c=color_map[i])ax = pv.velocity_plot(sd.Xdr.to_numpy(), sd.velocity_embeded, ax, 'stream',streamdensity=0.3, grid_density=50, radius=4.52, lw_coef=1000, arrowsize=2)ax.figure.set_size_inches(8,8)ax.spines['right'].set_visible(False)ax.spines['top'].set_visible(False)ax.spines['left'].set_visible(False)ax.spines['bottom'].set_visible(False)ax.set_xlabel('UMAP 1', fontsize=15)ax.set_ylabel('UMAP 2', fontsize=15)ax.axes.get_yaxis().set_visible(False)ax.axes.get_xaxis().set_visible(False)lgnd = ax.legend(bbox_to_anchor=(1,1), fontsize=10, loc='lower right')
+
+f)
+(manual calculation)
+
+g)
+(Cytoscape)
